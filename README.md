@@ -1,5 +1,5 @@
-# python-python-swagger-restful-api
-<i>python-python-swagger-restful-api
+# python-swagger-restful-api
+<i>python-swagger-restful-api
 
 FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.8+ based on standard Python type hints.
 
