@@ -23,7 +23,7 @@ app = APIRouter(
 async def node_lists(es_url="http://localhost:9200"):
     response =  await SearchAPIHandlerInject.get_node_lists(es_url)
     if isinstance(response, dict):
-        logger.info(f"SearchOmniHandler:index_name_id_search - {json.dumps(response, indent=2)}")
+        logger.info(f"SearchOmniHandler:node_lists - {json.dumps(response, indent=2)}")
     return response
 
 
@@ -39,5 +39,12 @@ async def cluster_heapspace(es_url="http://localhost:9200"):
     # https://stackoverflow.com/questions/61836761/get-return-status-from-background-tasks-in-fastapi
     response =  await SearchAPIHandlerInject.get_heapspace(es_url)
     if isinstance(response, dict):
-        logger.info(f"SearchOmniHandler:index_name_id_search - {json.dumps(response, indent=2)}")
+        logger.info(f"SearchOmniHandler:cluster_heapspace - {json.dumps(response, indent=2)}")
+    return response
+
+
+async def cluster_heapspace_each_instance(es_url="http://localhost:9200"):
+    response =  SearchAPIHandlerInject.get_heapspace_each(es_url)
+    if isinstance(response, dict):
+        logger.info(f"SearchOmniHandler:cluster_heapspace_each_instance - {json.dumps(response, indent=2)}")
     return response

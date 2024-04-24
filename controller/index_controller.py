@@ -138,7 +138,7 @@ async def index_mapping_compare_test(request: IndexMapping):
         response = await SearchAPIHandlerInject.get_index_mapping_compare_test(request_json['source_mapping'],request_json['target_mapping'])
 
         if isinstance(response, dict):
-            logger.info(f"SearchOmniHandler:index_mapping_compare - {json.dumps(response, indent=2)}")
+            logger.info(f"SearchOmniHandler:index_mapping_compare_test - {json.dumps(response, indent=2)}")
         
         EndTime = datetime.datetime.now()
 

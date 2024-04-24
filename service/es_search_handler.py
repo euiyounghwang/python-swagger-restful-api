@@ -236,12 +236,25 @@ class SearchAPIHandler(object):
         try:
             response_json = []
             r_list = requests.get(f"{es_host}/_cat/nodes?format=json")
-            print(json.dumps(r_list.json(), indent=2))
-        
+            # print(json.dumps(r_list.json(), indent=2))
+           
             for node in r_list.json():
                 r = requests.get("http://{}:9200/_cat/nodes?h=heap*&format=json".format(node['ip']))
+                if r.status_code != 200:
+                    return None
                 response_json.append({str(node['ip']) : r.json()[0]})
             return response_json
+        except Exception as e:
+            return StatusException.raise_exception(e)
+        
+
+    def get_heapspace_each(self, es_host):
+        ''' Get the information of cluster's node heapspace from the specific cluster'''
+        try:
+            r = requests.get("http://{}:9200/_cat/nodes?h=heap*&format=json".format(es_host), timeout=5)
+            if r.status_code != 200:
+                return None
+            return {str(es_host) : r.json()[0]}
         except Exception as e:
             return StatusException.raise_exception(e)
         
