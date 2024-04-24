@@ -5,6 +5,7 @@ from service.status_handler import (StatusHanlder, StatusException)
 from service.es_util import response_payload_transform
 from fastapi.responses import JSONResponse
 import jsondiff
+import requests
 
 
 class SearchOmniHandler(object):
@@ -228,4 +229,19 @@ class SearchAPIHandler(object):
             return StatusException.raise_exception(e)
         finally:
             self.es_client.close()
+
+
+    async def get_heapspace(self, es_host):
+        ''' Get the information of cluster's node heapspace from the specific cluster'''
+        try:
+            response_json = []
+            r_list = requests.get(f"{es_host}/_cat/nodes?format=json")
+            print(json.dumps(r_list.json(), indent=2))
+        
+            for node in r_list.json():
+                r = requests.get("http://{}:9200/_cat/nodes?h=heap*&format=json".format(node['ip']))
+                response_json.append({str(node['ip']) : r.json()[0]})
+            return response_json
+        except Exception as e:
+            return StatusException.raise_exception(e)
         
