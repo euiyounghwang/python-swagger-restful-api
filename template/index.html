@@ -1,0 +1,114 @@
+
+<!DOCTYPE HTML>
+<html>
+<title>GXO Elasticsearch Cluster</title>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="/template/js/webfontloader.js"></script>
+<script src="/template/js/chart.js"></script>
+<script src="/template/js/chart.min.js"></script>
+<script src="/template/js/jquery-1.12.4.min.js"></script>
+<script src="/template/js/jquery.serializeObject.min.js"></script>
+<script src="/template/js/datatables.min.js"></script>
+<script src="/template/js/dataTables.buttons.min.js"></script>
+<script src="/template/js/full_numbers_no_ellipses.js"></script>
+<script src="/template/js/jszip.min.js"></script>
+<script src="/template/js/pdfmake.min.js"></script>
+<script src="/template/js/vfs_fonts.js"></script>
+<script src="/template/js/jquery.form.js"></script> 
+<script src="/template/js/common.js"></script>
+<link rel="stylesheet" href="/template/css/datatables.min.css" />
+<link rel="stylesheet" href="/template/css/jquery-ui.css" />
+<link rel="stylesheet" href="/template/css/buttons.dataTables.min.css" />
+<link rel="stylesheet" href="/template/css/common.css" />
+</head>
+<body>
+    
+<!-- #wrapper -->
+<div id="wrapper">
+	<!-- #header -->
+	<div id="header">
+		<div id="header_top">
+			<span class="logo"><a href="#" onclick="$('#a_firstmenu').trigger('click');">Monitoring</a></span>
+			<ul class="info">
+				<li><span id="line-notice"/></li>
+				<li id="li_start"><a href="javascript:;" onclick="search_engine_start();" id="butt_start"><span class="ui-icon ui-icon-play">Start</span>Start</a></li>
+				<li id="li_stop"><a href="javascript:;" onclick="search_engine_stop();" id="butt_stop"><span class="ui-icon ui-icon-pause">Stop</span>Stop</a></li>
+			</ul>
+		</div>
+		<div id="gnb">
+			<h1 id="gnb_title"></h1>
+				<ul>
+				<li><a href="#n" onclick="loadCenterPage('/template/monitoring.html', 'Y','Server Monitoring');" id="a_firstmenu"><span>Search Engine Monitoring</span></a>
+					<ul>
+				    	<li><a href="#n" onclick="loadCenterPage('/template/monitoring.html', 'Y','Server Monitoring');"><span>ES Cluster(Prod)</span></a></li>
+				  </ul>
+				</li>
+				</ul>
+            
+		</div>
+		<div id="util">
+		</div>
+		<div id="depth2_bar"></div>
+	</div>
+	<!-- //#header -->
+	<!-- #container -->
+	<div id="container">
+		
+		<!-- #right -->
+		<div id="right" style="display:none;">
+		</div>
+		<!-- //#right -->		
+		<!-- #left -->
+		<div id="left" style="display:none;">
+		</div>
+		<!-- //#left -->
+		
+		<!-- #center -->
+		<div id="center">
+            
+    </div>
+    <!-- //#content -->
+    
+    <script src="/template/js/monitoring.js"></script>
+    
+    <style type="text/css">
+        .dataTables_processing {
+            top: 110px !important;
+            z-index: 11000 !important;
+        }
+        
+        td>table{
+            width:100% !important; 
+        }
+    </style>
+		</div>
+		<!-- //#center -->
+		
+		
+		<!-- #full -->
+		<div id="full" style="display:none;">
+		</div>
+		<!-- //#full -->
+	</div>
+	<!-- //#container -->
+	
+	<div id="blank"></div>
+</div>
+<div id="ajax_load_indicator" style="display:none;">
+	<img id='loadingImg' src='/template/img/loding.gif' style="display:none;" />
+</div>
+<script type="text/javascript">
+$( document ).ready(function() {
+	//초화면 셋팅
+	$('#a_firstmenu').trigger('click');
+    console.log("ok");
+	
+	// getApplicationTask();
+});
+</script>
+
+<!-- //#wrapper -->
+</body>
+
+</html>
