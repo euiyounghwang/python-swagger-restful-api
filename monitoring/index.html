@@ -4,23 +4,23 @@
 <title>Elasticsearch Cluster</title>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<script src="/template/js/webfontloader.js"></script>
-<script src="/template/js/chart.js"></script>
-<script src="/template/js/chart.min.js"></script>
-<script src="/template/js/jquery-1.12.4.min.js"></script>
-<script src="/template/js/jquery.serializeObject.min.js"></script>
-<script src="/template/js/datatables.min.js"></script>
-<script src="/template/js/dataTables.buttons.min.js"></script>
-<script src="/template/js/full_numbers_no_ellipses.js"></script>
-<script src="/template/js/jszip.min.js"></script>
-<script src="/template/js/pdfmake.min.js"></script>
-<script src="/template/js/vfs_fonts.js"></script>
-<script src="/template/js/jquery.form.js"></script> 
-<script src="/template/js/common.js"></script>
-<link rel="stylesheet" href="/template/css/datatables.min.css" />
-<link rel="stylesheet" href="/template/css/jquery-ui.css" />
-<link rel="stylesheet" href="/template/css/buttons.dataTables.min.css" />
-<link rel="stylesheet" href="/template/css/common.css" />
+<script src="/monitoring/js/webfontloader.js"></script>
+<script src="/monitoring/js/chart.js"></script>
+<script src="/monitoring/js/chart.min.js"></script>
+<script src="/monitoring/js/jquery-1.12.4.min.js"></script>
+<script src="/monitoring/js/jquery.serializeObject.min.js"></script>
+<script src="/monitoring/js/datatables.min.js"></script>
+<script src="/monitoring/js/dataTables.buttons.min.js"></script>
+<script src="/monitoring/js/full_numbers_no_ellipses.js"></script>
+<script src="/monitoring/js/jszip.min.js"></script>
+<script src="/monitoring/js/pdfmake.min.js"></script>
+<script src="/monitoring/js/vfs_fonts.js"></script>
+<script src="/monitoring/js/jquery.form.js"></script> 
+<script src="/monitoring/js/common.js"></script>
+<link rel="stylesheet" href="/monitoring/css/datatables.min.css" />
+<link rel="stylesheet" href="/monitoring/css/jquery-ui.css" />
+<link rel="stylesheet" href="/monitoring/css/buttons.dataTables.min.css" />
+<link rel="stylesheet" href="/monitoring/css/common.css" />
 </head>
 <body>
     
@@ -39,9 +39,9 @@
 		<div id="gnb">
 			<h1 id="gnb_title"></h1>
 				<ul>
-				<li><a href="#n" onclick="loadCenterPage('/template/monitoring.html', 'Y','Server Monitoring');" id="a_firstmenu"><span>Search Engine Monitoring</span></a>
+				<li><a href="#n" onclick="loadCenterPage('/monitoring/monitoring.html', 'Y','Server Monitoring');" id="a_firstmenu"><span>Search Engine Monitoring</span></a>
 					<ul>
-				    	<li><a href="#n" onclick="loadCenterPage('/template/monitoring.html', 'Y','Server Monitoring');"><span>ES Cluster(Prod)</span></a></li>
+				    	<li><a href="#n" onclick="loadCenterPage('/monitoring/monitoring.html', 'Y','Server Monitoring');"><span>Elasticsearch Cluster</span></a></li>
 				  </ul>
 				</li>
 				</ul>
@@ -70,7 +70,7 @@
     </div>
     <!-- //#content -->
     
-    <script src="/template/js/monitoring.js"></script>
+    <script src="/monitoring/js/monitoring.js"></script>
     
     <style type="text/css">
         .dataTables_processing {
@@ -96,13 +96,13 @@
 	<div id="blank"></div>
 </div>
 <div id="ajax_load_indicator" style="display:none;">
-	<img id='loadingImg' src='/template/img/loding.gif' style="display:none;" />
+	<img id='loadingImg' src='/monitoring/img/loding.gif' style="display:none;" />
 </div>
 <script type="text/javascript">
 $( document ).ready(function() {
 	//초화면 셋팅
 	$('#a_firstmenu').trigger('click');
-    console.log("ok");
+    // console.log("ok");
 	
 	// getApplicationTask();
 });

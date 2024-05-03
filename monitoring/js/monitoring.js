@@ -14,13 +14,14 @@ function numberWithCommas(x) {
 
 
 function search_engine_status(start){
+	// console.log("ok");
 	var params = {};
 	params['version_params'] = $("#version_params").val();
 //	alert(params['version_params']);
 //	alert($("#version_params").val());
 	$.ajax({
 		type : 'GET',
-        url:'http://localhost:8001',
+        url:'http://localhost:5000/get_es_health',
         data : JSON.stringify(params),
         dataType:'json',
         contentType: 'application/json',
