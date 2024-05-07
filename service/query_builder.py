@@ -27,10 +27,10 @@ class QueryBuilder:
                 #     "order": oas_query.get("sort_order"),
                 #     "missing": "_last"
                 # },
-                "title.keyword": {
-                    "order": oas_query.get("sort_order"),
-                    "missing": "_last"
-                }
+                # "title.keyword": {
+                #     "order": oas_query.get("sort_order"),
+                #     "missing": "_last"
+                # }
             }
         ]
 
@@ -54,7 +54,8 @@ class QueryBuilder:
                     "fields": ['*'],
                     "default_operator": "AND",
                     "analyzer": "standard",
-                    "query": oas_query.get('query_string')
+                    "query": oas_query.get('query_string'),
+                    "lenient" : True,
                 }
             }
 
@@ -117,7 +118,7 @@ class QueryBuilder:
             }
         }]
         self.es_query = {
-            "track_total_hits": True,
+            # "track_total_hits": True,
             "sort": self.build_sort(oas_query),
             "query" : {
                 "bool" : {

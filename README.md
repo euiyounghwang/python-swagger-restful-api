@@ -61,3 +61,24 @@ collected 3 items
 ### CI/CD Environment
 - CircleCI (`./circleci/config.yml`): CircleCI is a continuous integration and continuous delivery platform that helps software teams work smarter, faster. With CircleCI, every commit kicks off a new job in our platform, and code is built, tested, and deployed. 
 - Github Actions (`./.github/workflows/build-and-test.yml`) : GitHub Actions is a continuous integration and continuous delivery (CI/CD) platform that allows you to automate your build, test, and deployment pipeline. You can create workflows that build and test every pull request to your repository, or deploy merged pull requests to production.
+
+
+
+### Register Service
+- sudo service swagger_es_api status/stop/start/restart
+```bash
+#-- /etc/systemd/system/swagger_es_api.service
+[Unit]
+Description=Swagger ES Service
+
+[Service]
+User=biadmin
+Group=biadmin
+Type=simple
+ExecStart=/bin/bash /home/biadmin/Git_Repo/service-start.sh
+ExecStop= /usr/bin/killall swagger_es_service
+
+[Install]
+WantedBy=default.target
+
+```

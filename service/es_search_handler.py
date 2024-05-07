@@ -8,13 +8,10 @@ import jsondiff
 import requests
 
 
-class SearchOmniHandler(object):
-    
-    def __init__(self, logger):
-        self.logger = logger
-        
-    
-    def get_headers(self):
+class SearchCommonHandler(object):
+
+    @staticmethod
+    def get_headers():
         ''' Elasticsearch Header '''
         return {
             'Content-type': 'application/json', 
@@ -22,24 +19,32 @@ class SearchOmniHandler(object):
             'Connection': 'close'
         }
     
+
+class SearchOmniHandler(object):
+    
+    def __init__(self, logger):
+        self.logger = logger
+        
+    
     async def search(self, query_builder, oas_query=None):
         ''' Search with QuerBuilder '''
         if not oas_query:
             oas_query = {}
 
+        
         es_query = query_builder.build_query(oas_query)
         self.logger.info('query_builder_build_query:oas_query - {}'.format(json.dumps(es_query, indent=2)))
 
         try:
             if oas_query.get("source_es_host"):
                 self.es_client = Elasticsearch(hosts=oas_query.get("source_es_host"),
-                                    headers=self.get_headers(),
+                                    headers=SearchCommonHandler.get_headers(),
                                     verify_certs=False,
                                     max_retries=0,
                                     timeout=5)
                 
                 es_result = self.es_client.search(
-                    index = "test",
+                    index = oas_query.get("index_name", ""),
                     body=es_query,
                 )
         # This is what Elasticserch throws as an exception if the point in time context has expired
@@ -61,15 +66,11 @@ class SearchAPIHandler(object):
         self.logger = logger
 
     
-    def get_headers(self):
-        ''' Elasticsearch Header '''
-        return {'Content-type': 'application/json', 'Authoriztion' : 'Basic ZWxhc3RpYzpnc2FhZG1pbg==','Connection': 'close'}    
-    
     def get_es_health(self, es_host):
         ''' Get the information of cluster's health from the specific cluster'''
         try:
             self.es_client = Elasticsearch(hosts=es_host,
-                                headers=self.get_headers(),
+                                headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
                                 timeout=5)
@@ -85,11 +86,14 @@ class SearchAPIHandler(object):
         ''' Get index id from the specific cluster'''
         try:
             self.es_client = Elasticsearch(hosts=es_host,
-                                headers=self.get_headers(),
+                                headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
                                 timeout=5)
-            raw_data = self.es_client.get(index=index_name, id=id)
+            
+            # -- It can't be used get method on ES5 and higher thatn ES5 simultaneously
+            # raw_data = self.es_client.get(index=index_name, id=id)
+            raw_data = self.es_client.search(index=index_name, body={"query": {"match": {"_id": id}}})
             self.logger.info(f"get_index_by_id - {json.dumps(raw_data, indent=2)}")
 
             return raw_data
@@ -103,7 +107,7 @@ class SearchAPIHandler(object):
         ''' Get index lists from the specific cluster'''
         try:
             self.es_client = Elasticsearch(hosts=es_host,
-                                headers=self.get_headers(),
+                                headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
                                 timeout=5)
@@ -121,7 +125,7 @@ class SearchAPIHandler(object):
         ''' Get index mapping from the specific cluster'''
         try:
             self.es_client = Elasticsearch(hosts=es_host,
-                                headers=self.get_headers(),
+                                headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
                                 timeout=5)
@@ -163,12 +167,12 @@ class SearchAPIHandler(object):
         index_name = str(index_name).strip()
         try:
             self.es_client_source = Elasticsearch(hosts=source,
-                                headers=self.get_headers(),
+                                headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
                                 timeout=5)
             self.es_client_target = Elasticsearch(hosts=target,
-                                headers=self.get_headers(),
+                                headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
                                 timeout=5)
@@ -219,7 +223,7 @@ class SearchAPIHandler(object):
         ''' Get the information of cluster's node lists from the specific cluster'''
         try:
             self.es_client = Elasticsearch(hosts=es_host,
-                                headers=self.get_headers(),
+                                headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
                                 timeout=5)
