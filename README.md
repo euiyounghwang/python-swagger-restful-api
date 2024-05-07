@@ -75,7 +75,7 @@ Description=Swagger ES Service
 User=biadmin
 Group=biadmin
 Type=simple
-ExecStart=/bin/bash /home/biadmin/Git_Repo/service-start.sh
+ExecStart=/bin/bash /home/devuser/Git_Repo/service-start.sh
 ExecStop= /usr/bin/killall swagger_es_service
 
 [Install]
