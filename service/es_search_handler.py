@@ -2,7 +2,7 @@ import json
 from elasticsearch import Elasticsearch, exceptions
 import elasticsearch.exceptions
 from service.status_handler import (StatusHanlder, StatusException)
-from service.es_util import response_payload_transform
+from service.es_util import response_payload_transform, source_hosts_with_http
 from fastapi.responses import JSONResponse
 import jsondiff
 import requests
@@ -35,9 +35,12 @@ class SearchOmniHandler(object):
         es_query = query_builder.build_query(oas_query)
         self.logger.info('query_builder_build_query:oas_query - {}'.format(json.dumps(es_query, indent=2)))
 
+        source_hosts = source_hosts_with_http(oas_query.get("source_es_host").split(","))
+        self.logger.info('source_hosts - {}'.format(json.dumps(source_hosts, indent=2)))
+
         try:
             if oas_query.get("source_es_host"):
-                self.es_client = Elasticsearch(hosts=oas_query.get("source_es_host"),
+                self.es_client = Elasticsearch(hosts=source_hosts,
                                     headers=SearchCommonHandler.get_headers(),
                                     verify_certs=False,
                                     max_retries=0,
