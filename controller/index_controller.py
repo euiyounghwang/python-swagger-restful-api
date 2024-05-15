@@ -3,7 +3,7 @@ import json
 import datetime
 from injector import logger, SearchOmniHandlerInject, SearchAPIHandlerInject
 from service.status_handler import (StatusHanlder, StatusException)
-from repository.schema import IndexMapping
+from repository.repository_schema import IndexMapping
 from fastapi.responses import JSONResponse
 from typing import Optional
 from fastapi import BackgroundTasks

@@ -6,7 +6,7 @@ from injector import (logger,
                       SearchOmniHandlerInject
                       )
 from service.status_handler import (StatusHanlder, StatusException)
-from repository.schema import ES_Host_Model
+from repository.repository_schema import ES_Host_Model
 from typing import Optional
 
 

@@ -7,7 +7,7 @@ from injector import (logger,
                       QueryBuilderInject
                       )
 from service.status_handler import (StatusHanlder, StatusException)
-from repository.schema import Search
+from repository.repository_schema import Search
 from typing import Optional
 import datetime
 
