@@ -24,7 +24,8 @@ app = APIRouter(
           description="Sample Payload : http://localhost:8001/cluster/health?es_url=http://localhost:9200", 
           summary="Cluster Info")
 async def get_es_health(es_url="http://localhost:9200"):
-# async def Elasticsearch_Search(es_url : ES_Host_Model):
+# async def get_es_info(es_url : ES_Host_Model):
+    # logger.info(es_url)
     response =  SearchAPIHandlerInject.get_es_health(es_url)
     if isinstance(response, dict):
         logger.info('SearchOmniHandler:get_es_info - {}'.format(json.dumps(response, indent=2)))

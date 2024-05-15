@@ -4,6 +4,8 @@ from pytz import timezone as tz
 from enum import Enum
 from typing import List, Union
 import uuid
+from injector import es_hosts_enum_list
+import sys
 
 
 class Sort_Order(str, Enum):
@@ -13,9 +15,11 @@ class Sort_Order(str, Enum):
 
 
 class ES_Host_Model(str, Enum):
-    localhost = "http://localhost:9200"
-    dev = "http://localhost:9200"
-
+    # localhost = "http://localhost:9200"
+    # dev = "http://tsgvm00877:9200"
+    # print("ES_Host_Model - ", { f"day_{i}": es_hosts_enum_list[i] for i in range(len(es_hosts_enum_list)) })
+    vars().update({ f"day_{i}": es_hosts_enum_list[i] for i in range(len(es_hosts_enum_list)) })
+    
 
 class Search(BaseModel):
     source_es_host: str = "http://localhost:9200"

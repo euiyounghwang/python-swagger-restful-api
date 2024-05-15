@@ -19,7 +19,16 @@ from service.query_builder import QueryBuilder
     
 #     return doc
 
-
+#--
+# read host file to make an enum
+def read_hosts(server_file):
+    server_list_dict = {}
+    with open(server_file) as data_file:
+        for line in data_file:
+            line = line.strip().split(",")
+            # print(f"{line}")
+            server_list_dict.update({line[0] : str(line[1]).lower()})
+    return server_list_dict
 
 
 load_dotenv()
@@ -28,7 +37,12 @@ load_dotenv()
 logger = create_log()
 
 
-SearchAPIHandlerInject = SearchAPIHandler(logger)
-SearchOmniHandlerInject = SearchOmniHandler(logger)
+hosts = read_hosts("./repository/hosts")
+''' hosts = ['localhost', 'dev',...] '''
+# logger.info(list(hosts.keys()))
+es_hosts_enum_list =list(hosts.keys())
+
+SearchAPIHandlerInject = SearchAPIHandler(logger, hosts)
+SearchOmniHandlerInject = SearchOmniHandler(logger, hosts)
 
 QueryBuilderInject = QueryBuilder(logger)

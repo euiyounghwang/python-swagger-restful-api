@@ -2,8 +2,9 @@ import json
 from elasticsearch import Elasticsearch, exceptions
 import elasticsearch.exceptions
 from service.status_handler import (StatusHanlder, StatusException)
-from service.es_util import response_payload_transform, source_hosts_with_http
+from service.es_util import response_payload_transform, source_hosts_with_http, generate_es_host
 from fastapi.responses import JSONResponse
+from fastapi import Depends
 import jsondiff
 import requests
 
@@ -22,8 +23,9 @@ class SearchCommonHandler(object):
 
 class SearchOmniHandler(object):
     
-    def __init__(self, logger):
+    def __init__(self, logger, hosts):
         self.logger = logger
+        self.hosts = hosts
         
     
     async def search(self, query_builder, oas_query=None):
@@ -40,16 +42,40 @@ class SearchOmniHandler(object):
 
         try:
             if oas_query.get("source_es_host"):
-                self.es_client = Elasticsearch(hosts=source_hosts,
-                                    headers=SearchCommonHandler.get_headers(),
-                                    verify_certs=False,
-                                    max_retries=0,
-                                    timeout=5)
-                
+                source_host = oas_query.get("source_es_host")
+                """
+                for source_host in source_hosts:
+                    try:
+                        self.es_client = Elasticsearch(hosts=source_host,
+                                            headers=SearchCommonHandler.get_headers(),
+                                            verify_certs=False,
+                                            max_retries=0,
+                                            timeout=5)
+                        
+                        es_result = self.es_client.search(
+                            index = oas_query.get("index_name", ""),
+                            body=es_query,
+                        )
+
+                    except Exception as e:
+                        continue
+
+                    else:
+                        #This is when code on try is done OK!
+                        break
+                """
+                self.es_client = Elasticsearch(hosts=source_host,
+                                            headers=SearchCommonHandler.get_headers(),
+                                            verify_certs=False,
+                                            max_retries=0,
+                                            timeout=5)
+                        
                 es_result = self.es_client.search(
-                    index = oas_query.get("index_name", ""),
-                    body=es_query,
-                )
+                           index = oas_query.get("index_name", ""),
+                            body=es_query,
+                            )
+
+                    
         # This is what Elasticserch throws as an exception if the point in time context has expired
         except Exception as e:
            return StatusException.raise_exception(str(e))
@@ -65,13 +91,37 @@ class SearchOmniHandler(object):
 
 class SearchAPIHandler(object):
     
-    def __init__(self, logger):
+    def __init__(self, logger, hosts):
         self.logger = logger
+        self.hosts = hosts
 
     
     def get_es_health(self, es_host):
         ''' Get the information of cluster's health from the specific cluster'''
+        error_msg = ""
         try:
+            """
+            self.logger.info(es_host)
+            # es_hosts = generate_es_host(self.hosts, es_host)
+            es_hosts = es_host
+            self.logger.info(es_hosts)
+            for es_host in [es_hosts]:
+                try:
+                    self.es_client = Elasticsearch(hosts=es_host,
+                                headers=SearchCommonHandler.get_headers(),
+                                verify_certs=False,
+                                max_retries=0,
+                                timeout=5)
+                    # print(type(self.es_client.cluster.health()))
+                    return self.es_client.cluster.health()
+                except Exception as e:
+                        error_msg = e
+                        continue
+                else:
+                    #This is when code on try is done OK!
+                    break
+            return StatusException.raise_exception(error_msg)
+            """
             self.es_client = Elasticsearch(hosts=es_host,
                                 headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
