@@ -72,8 +72,8 @@ collected 3 items
 Description=Swagger ES Service
 
 [Service]
-User=biadmin
-Group=biadmin
+User=devuser
+Group=devuser
 Type=simple
 ExecStart=/bin/bash /home/devuser/Git_Repo/service-start.sh
 ExecStop= /usr/bin/killall swagger_es_service
@@ -81,4 +81,12 @@ ExecStop= /usr/bin/killall swagger_es_service
 [Install]
 WantedBy=default.target
 
+
+# Service command
+sudo systemctl daemon-reload 
+sudo systemctl start swagger_es_service.service 
+sudo systemctl status swagger_es_service.service 
+sudo systemctl stop swagger_es_service.service 
+
+sudo service swagger_es_service status/stop/start
 ```
