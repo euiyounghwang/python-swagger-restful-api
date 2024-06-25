@@ -16,7 +16,7 @@ class SearchCommonHandler(object):
         ''' Elasticsearch Header '''
         return {
             'Content-type': 'application/json', 
-            'Authoriztion' : 'Basic ZWxhc3RpYzpnc2FhZG1pbg==',
+            'Authorization' : 'Basic YWRtaW46cG9zY28xMjM=',
             'Connection': 'close'
         }
     
@@ -66,6 +66,7 @@ class SearchOmniHandler(object):
                 """
                 self.es_client = Elasticsearch(hosts=source_host,
                                             headers=SearchCommonHandler.get_headers(),
+                                            # http_auth=('test', 'test'),
                                             verify_certs=False,
                                             max_retries=0,
                                             timeout=5)

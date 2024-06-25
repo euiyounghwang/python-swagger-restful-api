@@ -23,10 +23,13 @@ def source_hosts_with_http(source_hosts_list):
     ''' split string source host with "," to list'''
     transform_source_hosts = []
     for source_host in source_hosts_list: 
+        '''
         if not str(source_host).strip().startswith("http://"):
             transform_source_hosts.append(make_port("http://{}".format(str(source_host).replace(" ", ""))))
         else:
             transform_source_hosts.append(make_port(str(source_host).replace(" ", "")))
+        '''
+        transform_source_hosts.append(make_port(str(source_host).replace(" ", "")))
 
     print('source_hosts_with_http - ', json.dumps(transform_source_hosts, indent=2))
     return transform_source_hosts
