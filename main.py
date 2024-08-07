@@ -17,7 +17,7 @@ app = FastAPI(
     # terms_of_service="http://example.com/terms/",
     contact={
         "name": "ES Dev Team at GXO",
-        "email": "esdevteam@gxo.com"
+        "email": "a@xyz.com"
     },
     # license_info={
     #     "name": "Apache 2.0",
