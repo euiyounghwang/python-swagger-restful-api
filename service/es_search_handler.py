@@ -346,10 +346,12 @@ class SearchAPIHandler(object):
                 return {"error" : str(e)}
 
             resp = {
-                "mappings_same" : all(self.all_same_mapping),
-                "mapping_details" : self.response,
+                "source_es_cluster" : source,
+                "target_es_cluster" : target,
                 "source_idx_total_cnt" : source_idx_cnt,
-                "target_idx_total_cnt" : target_idx_cnt
+                "target_idx_total_cnt" : target_idx_cnt,
+                "mappings_same" : all(self.all_same_mapping),
+                "mapping_details" : self.response
             }
 
             # return self.response, self.all_same_mapping
