@@ -17,6 +17,6 @@ else
     source $VENV/Scripts/activate
 fi
 
-python -m uvicorn main:app --reload --host=0.0.0.0 --port=8001 --workers 4
+python -m uvicorn main:app --reload --host=0.0.0.0 --port=8001 --workers 1
 # gunicorn -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:8001 --workers 4
 # poetry run uvicorn main:app --reload --host=0.0.0.0 --port=8001 --workers 4

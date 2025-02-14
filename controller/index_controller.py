@@ -88,6 +88,32 @@ async def index_mapping_compare(index_name="test", source_cluster="http://localh
         logger.info(f"Delay Time : {Delay_Time}")
 
 
+@app.get("/all_indices_mapping_compare", 
+          status_code=StatusHanlder.HTTP_STATUS_200,
+          responses={
+            200: {"description" : "OK"},
+            404 :{"description" : "URl not found"}
+          },
+          description="Sample Payload : http://localhost:8001/index/all_indices_mapping_compare?source_cluster=http://localhost:9200&target_cluster=http://localhost:9292", 
+          summary="* Return All Index Mapping Compare")
+async def all_index_mapping_compare(source_cluster="http://localhost:9200", target_cluster="http://localhost:9200"):
+    StartTime, EndTime, Delay_Time = 0, 0, 0
+    try:
+        StartTime = datetime.datetime.now()
+        
+        response = SearchAPIHandlerInject.get_index_all_mapping_compare(source_cluster, target_cluster)
+
+        if isinstance(response, dict):
+            logger.info(f"SearchOmniHandler:all_index_mapping_compare - {json.dumps(response, indent=2)}")
+        
+        EndTime = datetime.datetime.now()
+        Delay_Time = str((EndTime - StartTime).seconds) + '.' + str((EndTime - StartTime).microseconds).zfill(6)[:2]
+
+        return response
+    finally:
+        logger.info(f"Delay Time : {Delay_Time}")
+
+
 
 """
 @app.get("/mapping_compare_all", 

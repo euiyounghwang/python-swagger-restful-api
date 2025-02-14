@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi import Depends
 import jsondiff
 import requests
+import os
 
 
 class SearchCommonHandler(object):
@@ -16,7 +17,7 @@ class SearchCommonHandler(object):
         ''' Elasticsearch Header '''
         return {
             'Content-type': 'application/json', 
-            'Authorization' : 'Basic YWRtaW46cG9zY28xMjM=',
+            'Authorization' : 'Basic {}'.format(os.getenv('BASIC_AUTH')),
             'Connection': 'close'
         }
     
@@ -95,6 +96,8 @@ class SearchAPIHandler(object):
     def __init__(self, logger, hosts):
         self.logger = logger
         self.hosts = hosts
+        self.all_same_mapping =  []
+        self.response = {}
 
     
     def get_es_health(self, es_host):
@@ -230,8 +233,10 @@ class SearchAPIHandler(object):
                                 verify_certs=False,
                                 max_retries=0,
                                 timeout=5)
+            
             try:
                 source_mapping = self.es_client_source.indices.get_mapping(index=index_name)
+                self.logger.info(source_mapping)
             except Exception as e:
                 # return {"error" : 'Index [{}]was not found in {} [Source:Elasticsearch Cluster]'.format(index_name, source)}
                 return StatusException.raise_exception('Index [{}]was not found in {} [Source:Elasticsearch Cluster]'.format(index_name, source))
@@ -243,18 +248,118 @@ class SearchAPIHandler(object):
                 return StatusException.raise_exception('Index [{}]was not found in {} [Target:Elasticsearch Cluster]'.format(index_name, target))
             
             # Compare JSON objects using jsondiff
-            # diff = jsondiff.diff(source_mapping, target_mapping, marshal=True, syntax="symmetric")
-            diff = jsondiff.diff(source_mapping, target_mapping, marshal=True)
+            diff = jsondiff.diff(source_mapping, target_mapping, marshal=True, syntax="symmetric")
+            # diff = jsondiff.diff(source_mapping, target_mapping, marshal=True)
 
             # Print the difference between the two JSON objects
-            # print(json.dumps(diff, indent=2))
+            # self.logger.info(json.dumps(diff, indent=2))
+
             return response_payload_transform(diff)
         except Exception as e:
             return {"error" : str(e)}
-        finally:
-            self.es_client_source.close()
-            self.es_client_target.close()
 
+
+    def compare_mapping(self, index_name, diff):
+        ''' compare diff using jsondiff library '''
+        if not diff:
+            self.all_same_mapping.append(True)
+            self.response.update({index_name : {'diff' : 'Same mapping'}})
+        else:
+            self.all_same_mapping.append(False)
+            self.response.update({index_name : {'diff' : 'Different mapping', 'result' : diff}})
+        return self.response, self.all_same_mapping
+
+
+    def get_mapping_from_properties(self, mapping, es_v5=False):
+        if es_v5:
+            return {"properties" : v2.get("properties") for k, v in mapping.items() for k1, v1 in v.items() for k2, v2 in v1.items() if self.lookup_type_in_indices(k2)}    
+        else:
+            return {'properties': v2 for k, v in mapping.items() for k1, v1 in v.items() for k2, v2 in v1.items() }
+        
+
+    def es_version_verify(self, es_client):
+        # print(es_client.info()['version']['number'], type(es_client.info()['version']['number']))
+        ''' if es_client v.5.X '''
+        if "5." in es_client.info()['version']['number']:
+            return True
+        else:
+            return False
+        
+    def lookup_type_in_indices(self, key):
+        ''' lookup type we want to compare from the source es cluster '''
+        if "OM_" in key or "WX_" in key or "ES_" in key or "ARCHIVE_" in key:
+            return True
+        return False
+
+
+    def get_index_all_mapping_compare(self, source, target):
+        ''' Compare all index mapping between two clusters for a given ES indices'''
+        source_idx_cnt, target_idx_cnt = 0, 0
+        try:
+            self.es_client_source = Elasticsearch(hosts=source,
+                                headers=SearchCommonHandler.get_headers(),
+                                verify_certs=False,
+                                max_retries=0,
+                                timeout=5)
+            self.es_client_target = Elasticsearch(hosts=target,
+                                headers=SearchCommonHandler.get_headers(),
+                                verify_certs=False,
+                                max_retries=0,
+                                timeout=5)
+            try:
+                source_idx_lists = list(self.es_client_source.indices.get("*"))
+
+                for index_name in source_idx_lists:
+                    ''' real index '''
+                    if index_name.startswith("wx_") or index_name.startswith("om_") or index_name.startswith("es_") or index_name.startswith("archive_es_"):
+                        source_idx_cnt +=1
+                        try:
+                            source_mapping = self.es_client_source.indices.get_mapping(index=index_name)
+                            target_mapping = self.es_client_target.indices.get_mapping(index=index_name)
+                        
+                            ''' Get ES v.5.6.4 mapping '''
+                            source_mapping = self.get_mapping_from_properties(source_mapping, es_v5=self.es_version_verify(self.es_client_source))
+                            # print(source_mapping)
+
+                            ''' Get ES v.8.17 mapping if es_version_verify False '''
+                            target_mapping = self.get_mapping_from_properties(target_mapping, es_v5=self.es_version_verify(self.es_client_target))
+                            # print(target_mapping)
+                                    
+                            ''' Get ES v.8.17 mapping '''
+                            # target_mapping = get_mapping_from_properties(target_mapping)
+                            # print(target_mapping)
+                        
+                            # Compare JSON objects using jsondiff
+                            diff = jsondiff.diff(source_mapping, target_mapping, marshal=True, syntax="symmetric")
+                            # diff = jsondiff.diff(source_mapping, target_mapping, marshal=True)
+                        
+                            ''' Compare mapping the specific index_name between source/target cluster '''
+                            self.compare_mapping(index_name, diff)
+                            target_idx_cnt += 1
+                        except Exception as e:
+                            print(e)
+                            # return StatusException.raise_exception('Index [{}]was not found in {} [Source:Elasticsearch Cluster]'.format(index_name, source))
+                            # pass
+            except Exception as e:
+                print(e)
+                # pass
+                return {"error" : str(e)}
+
+            resp = {
+                "mappings_same" : all(self.all_same_mapping),
+                "mapping_details" : self.response,
+                "source_idx_total_cnt" : source_idx_cnt,
+                "target_idx_total_cnt" : target_idx_cnt
+            }
+
+            # return self.response, self.all_same_mapping
+            return resp
+            # return all(self.all_same_mapping)
+        
+        except Exception as e:
+            # return StatusException.raise_exception(str(e))
+            return {"error" : str(e)}
+      
 
     async def get_index_mapping_compare_test(self, source_mapping, target_mapping):
         ''' Compare index mapping as test between two clusters'''
