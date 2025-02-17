@@ -8,7 +8,8 @@ from fastapi import Depends
 import jsondiff
 import requests
 import os
-
+import warnings
+warnings.filterwarnings("ignore")
 
 class SearchCommonHandler(object):
 
@@ -17,7 +18,7 @@ class SearchCommonHandler(object):
         ''' Elasticsearch Header '''
         return {
             'Content-type': 'application/json', 
-            'Authorization' : 'Basic {}'.format(os.getenv('BASIC_AUTH')),
+            'Authorization' : '{}'.format(os.getenv('BASIC_AUTH')),
             'Connection': 'close'
         }
     
@@ -223,6 +224,7 @@ class SearchAPIHandler(object):
         ''' Compare index mapping between two clusters'''
         index_name = str(index_name).strip()
         try:
+            ''' There should be an option to disable certificate verification during SSL connection. It will simplify developing and debugging process. '''
             self.es_client_source = Elasticsearch(hosts=source,
                                 headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
@@ -296,16 +298,17 @@ class SearchAPIHandler(object):
         ''' Compare all index mapping between two clusters for a given ES indices'''
         source_idx_cnt, target_idx_cnt = 0, 0
         try:
+            # self.logger.info(SearchCommonHandler.get_headers())
             self.es_client_source = Elasticsearch(hosts=source,
                                 headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
-                                timeout=5)
+                                timeout=30)
             self.es_client_target = Elasticsearch(hosts=target,
                                 headers=SearchCommonHandler.get_headers(),
                                 verify_certs=False,
                                 max_retries=0,
-                                timeout=5)
+                                timeout=30)
             try:
                 source_idx_lists = list(self.es_client_source.indices.get("*"))
 
@@ -315,6 +318,10 @@ class SearchAPIHandler(object):
                         source_idx_cnt +=1
                         try:
                             source_mapping = self.es_client_source.indices.get_mapping(index=index_name)
+
+                            if not self.es_client_target.indices.exists(index_name):
+                                continue
+
                             target_mapping = self.es_client_target.indices.get_mapping(index=index_name)
                         
                             ''' Get ES v.5.6.4 mapping '''
@@ -328,6 +335,7 @@ class SearchAPIHandler(object):
                             ''' Get ES v.8.17 mapping '''
                             # target_mapping = get_mapping_from_properties(target_mapping)
                             # print(target_mapping)
+                            # self.logger.info(f"index name : {index_name}")
                         
                             # Compare JSON objects using jsondiff
                             diff = jsondiff.diff(source_mapping, target_mapping, marshal=True, syntax="symmetric")
@@ -336,20 +344,25 @@ class SearchAPIHandler(object):
                             ''' Compare mapping the specific index_name between source/target cluster '''
                             self.compare_mapping(index_name, diff)
                             target_idx_cnt += 1
+                        
+                        except elasticsearch.ConnectionError as e:
+                            return StatusException.raise_exception(f'elasticsearch.ConnectionError : {str(e)}')
+                            # raise Exception(f'elasticsearch.ConnectionError : {str(e)}')
+                        '''
                         except Exception as e:
                             print(e)
                             # return StatusException.raise_exception('Index [{}]was not found in {} [Source:Elasticsearch Cluster]'.format(index_name, source))
-                            # pass
+                        '''
+
             except Exception as e:
                 print(e)
-                # pass
-                return {"error" : str(e)}
+                # return {"error" : str(e)}
 
             resp = {
                 "source_es_cluster" : source,
                 "target_es_cluster" : target,
-                "source_idx_total_cnt" : source_idx_cnt,
-                "target_idx_total_cnt" : target_idx_cnt,
+                "The number of ES indices in the source es cluster" : source_idx_cnt,
+                "The number of ES indices in the target es cluster that have the same index name as the source cluster" : target_idx_cnt,
                 "mappings_same" : all(self.all_same_mapping),
                 "mapping_details" : self.response
             }
