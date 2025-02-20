@@ -196,6 +196,23 @@ class SearchAPIHandler(object):
         finally:
             self.es_client.close()
 
+
+    def get_es_api_alias(self, es_client):
+        ''' get all alias and set to dict'''
+        get_alias_old_cluster = es_client.indices.get_alias()
+        # print(f"Get alias from old cluster : {json.dumps(get_alias_old_cluster, indent=2)}")
+
+        reset_alias_dict = {}
+        for k in get_alias_old_cluster.keys():
+            if get_alias_old_cluster.get(k).get('aliases'):
+                each_alias = list(get_alias_old_cluster.get(k).get('aliases').keys())
+                # print(each_alias)
+                reset_alias_dict.update({k : each_alias})
+        # print(json.dumps(reset_alias_dict, indent=2))
+        # print(f"get_es_api_alias : {reset_alias_dict}")
+
+        return reset_alias_dict
+
     
     async def get_index_mapping_compare_all(self, source, target):
         ''' get index list from source cluster'''
@@ -292,6 +309,26 @@ class SearchAPIHandler(object):
         if "OM_" in key or "WX_" in key or "ES_" in key or "ARCHIVE_" in key:
             return True
         return False
+    
+
+    def indices_size_list_to_dict(self, idx):
+        ''' transform list to simple dict '''
+        ''' 
+        {
+            "health": "green",
+            "status": "open",
+            "index": "demo1",
+            "uuid": "doRs5jU-SJm4ZRIqTV2duQ",
+            "pri": "5",
+            "rep": "1",
+            "docs.count": "1",
+            "docs.deleted": "0",
+            "store.size": "8.9kb",
+            "pri.store.size": "4.4kb"
+        },
+    '''
+        indices_size_dict = {element.get("index") : element.get("store.size") for element in idx}
+        return indices_size_dict
 
 
     def get_index_all_mapping_compare(self, source, target):
@@ -375,6 +412,61 @@ class SearchAPIHandler(object):
             # return StatusException.raise_exception(str(e))
             return {"error" : str(e)}
       
+
+    def get_lookup_old_indices_from_aliases(self, source):
+        ''' Lookup old indices which are not mapped to any aliases excluding indices starting with logstash*, es_*, archieve_* or .'''
+        try:
+            self.es_client_source = Elasticsearch(hosts=source,
+                                headers=SearchCommonHandler.get_headers(),
+                                verify_certs=False,
+                                max_retries=0,
+                                timeout=30)
+             
+            source_idx_lists = list(self.es_client_source.indices.get("*"))
+            # print(f"ssource_idx_lists : {source_idx_lists}")
+
+            indices_size_list = self.es_client_source.cat.indices(params={"format": "json"})
+            indices_size_dict = self.indices_size_list_to_dict(indices_size_list)
+
+            es_aliases_dict = self.get_es_api_alias(self.es_client_source)
+            # print(f"es_aliases_dict : {json.dumps(es_aliases_dict, indent=2)}")
+            print(f"len(es_aliases_dict for the mapped ES indices) : {len(es_aliases_dict)}")
+
+            # mapped_aliase_list = [",".join(v) for k, v in es_aliases_dict.items() if isinstance(v, (list, str))]
+            mapped_aliase_list = [k for k, v in es_aliases_dict.items()]
+            # print(json.dumps(mapped_aliase_list, indent=2))
+
+            ''' Lookup old indices which are not mapped to any aliases excluding indices starting with logstash*, es_*, archieve_* or .'''
+            unmapped_index_aliase = [
+                                    index_name for index_name in source_idx_lists 
+                                    if index_name not in mapped_aliase_list 
+                                    and not index_name.startswith(".") 
+                                    and not index_name.startswith("logstash")
+                                    and not index_name.startswith("es_")
+                                    and not index_name.startswith("archive_")
+                                    ]
+            query = {
+                # "_source": False,
+                'query': {
+                    'match_all': {}
+                }
+            }
+
+            api_response = {}
+            unmapped_index = {}
+            api_response.update({"source_es_cluster" : str(self.es_client_source)})
+            for index_name in unmapped_index_aliase:
+                # print(index_name)
+                es_count_source = self.es_client_source.count(index=index_name, body=query)["count"]
+                unmapped_index.update({index_name : {'doc_count' : es_count_source, "store.size" : indices_size_dict.get(index_name)}})
+            api_response.update({'unmapped_aliase' : unmapped_index})
+                
+            return api_response
+            
+        except Exception as e:
+            # return {"error" : str(e)}
+            return StatusException.raise_exception(str(e))
+        
 
     async def get_index_mapping_compare_test(self, source_mapping, target_mapping):
         ''' Compare index mapping as test between two clusters'''
