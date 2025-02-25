@@ -335,6 +335,8 @@ class SearchAPIHandler(object):
         ''' Compare all index mapping between two clusters for a given ES indices'''
         source_idx_cnt, target_idx_cnt = 0, 0
         try:
+            self.all_same_mapping = []
+            
             # self.logger.info(SearchCommonHandler.get_headers())
             self.es_client_source = Elasticsearch(hosts=source,
                                 headers=SearchCommonHandler.get_headers(),
@@ -394,6 +396,7 @@ class SearchAPIHandler(object):
             except Exception as e:
                 print(e)
                 # return {"error" : str(e)}
+                self.response.update({"error" : str(e)})
 
             resp = {
                 "source_es_cluster" : source,
