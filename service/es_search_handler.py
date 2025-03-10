@@ -392,28 +392,29 @@ class SearchAPIHandler(object):
                             print(e)
                             # return StatusException.raise_exception('Index [{}]was not found in {} [Source:Elasticsearch Cluster]'.format(index_name, source))
                         '''
+                
+                resp = {
+                    "source_es_cluster" : source,
+                    "target_es_cluster" : target,
+                    "The number of ES indices in the source es cluster" : source_idx_cnt,
+                    "The number of ES indices in the target es cluster that have the same index name as the source cluster" : target_idx_cnt,
+                    "mappings_same" : all(self.all_same_mapping),
+                    "mapping_details" : self.response
+                }
+
+                # return self.response, self.all_same_mapping
+                return resp
+                # return all(self.all_same_mapping)
 
             except Exception as e:
                 print(e)
-                # return {"error" : str(e)}
-                self.response.update({"error" : str(e)})
+                return {"error" : str(e)}
+                # self.response.update({"error" : str(e)})
 
-            resp = {
-                "source_es_cluster" : source,
-                "target_es_cluster" : target,
-                "The number of ES indices in the source es cluster" : source_idx_cnt,
-                "The number of ES indices in the target es cluster that have the same index name as the source cluster" : target_idx_cnt,
-                "mappings_same" : all(self.all_same_mapping),
-                "mapping_details" : self.response
-            }
-
-            # return self.response, self.all_same_mapping
-            return resp
-            # return all(self.all_same_mapping)
         
         except Exception as e:
-            # return StatusException.raise_exception(str(e))
-            return {"error" : str(e)}
+            return StatusException.raise_exception(str(e))
+            # return {"error" : str(e)}
       
 
     def get_lookup_old_indices_from_aliases(self, source):
